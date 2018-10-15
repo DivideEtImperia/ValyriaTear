@@ -1071,7 +1071,7 @@ void GlobalCharacter::AddObtainedSkillNode(uint32_t skill_node_id) {
 
     // Remove needed items
     for (auto item : node->GetItemsNeeded()) {
-        GlobalManager->DecrementItemCount(item.first, item.second);
+        GlobalManager->GetInventoryHandler().DecrementItemCount(item.first, item.second);
     }
 
     _obtained_skill_nodes.emplace_back(skill_node_id);

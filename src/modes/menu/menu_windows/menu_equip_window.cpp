@@ -144,6 +144,7 @@ void EquipWindow::Update()
     OptionBox *active_option = nullptr;
 
     GlobalMedia& media = GlobalManager->Media();
+    InventoryHandler& inventory_handler = GlobalManager->GetInventoryHandler();
 
     //choose correct menu
     switch(_active_box) {
@@ -218,19 +219,19 @@ void EquipWindow::Update()
                 switch(_equip_select.GetSelection()) {
                     // Unequip and return the old weapon to inventory
                 case EQUIP_WEAPON:
-                    GlobalManager->AddToInventory(_character->EquipWeapon(nullptr));
+                    inventory_handler.AddToInventory(_character->EquipWeapon(nullptr));
                     break;
                 case EQUIP_HEAD:
-                    GlobalManager->AddToInventory(_character->EquipHeadArmor(nullptr));
+                    inventory_handler.AddToInventory(_character->EquipHeadArmor(nullptr));
                     break;
                 case EQUIP_TORSO:
-                    GlobalManager->AddToInventory(_character->EquipTorsoArmor(nullptr));
+                    inventory_handler.AddToInventory(_character->EquipTorsoArmor(nullptr));
                     break;
                 case EQUIP_ARMS:
-                    GlobalManager->AddToInventory(_character->EquipArmArmor(nullptr));
+                    inventory_handler.AddToInventory(_character->EquipArmArmor(nullptr));
                     break;
                 case EQUIP_LEGS:
-                    GlobalManager->AddToInventory(_character->EquipLegArmor(nullptr));
+                    inventory_handler.AddToInventory(_character->EquipLegArmor(nullptr));
                     break;
                 default:
                     PRINT_WARNING << "Unequip slot is invalid: " << _equip_select.GetSelection() << std::endl;
@@ -257,11 +258,11 @@ void EquipWindow::Update()
 
             switch(_equip_select.GetSelection()) {
             case EQUIP_WEAPON: {
-                std::shared_ptr<GlobalWeapon> wpn = GlobalManager->GetInventoryWeapons()->at(inventory_id);
+                std::shared_ptr<GlobalWeapon> wpn = inventory_handler.GetInventoryWeapons().at(inventory_id);
                 if(wpn->GetUsableBy() & _character->GetID()) {
                     id_num = wpn->GetID();
-                    GlobalManager->AddToInventory(_character->EquipWeapon(std::dynamic_pointer_cast<GlobalWeapon>(GlobalManager->GetGlobalObject(id_num))));
-                    GlobalManager->DecrementItemCount(id_num, 1);
+                    inventory_handler.AddToInventory(_character->EquipWeapon(std::dynamic_pointer_cast<GlobalWeapon>(GlobalManager->GetGlobalObject(id_num))));
+                    inventory_handler.DecrementItemCount(id_num, 1);
                 } else {
                     media.PlaySound("cancel");
                 }

@@ -428,7 +428,7 @@ void ShopObjectViewer::_UpdateTradeConditions()
         uint32_t item_number = trade_cond[i].second;
 
         // Gets how many items the party has got
-        uint32_t owned_number = GlobalManager->HowManyObjectsInInventory(item_id);
+        uint32_t owned_number = GlobalManager->GetInventoryHandler().HowManyObjectsInInventory(item_id);
 
         // Create a global object to get info from.
         std::shared_ptr<GlobalObject> obj = GlobalCreateNewObject(item_id, 1);
@@ -1289,8 +1289,8 @@ void ShopMode::_UpdateAvailableObjectsToSell()
     if (!_sell_mode_enabled)
         return;
 
-    auto inventory = GlobalManager->GetInventory();
-    for (auto it = inventory->begin(); it != inventory->end(); ++it) {
+    auto inventory = GlobalManager->GetInventoryHandler().GetInventory();
+    for (auto it = inventory.begin(); it != inventory.end(); ++it) {
         // Don't consider 0 worth objects.
         if (it->second->GetPrice() == 0)
             continue;
@@ -1679,6 +1679,8 @@ void ShopMode::CompleteTransaction()
     uint32_t count = 0;
     uint32_t id = 0;
 
+    InventoryHandler& inventory_handler = GlobalManager->GetInventoryHandler();
+
     // Add all objects on the buy list to the inventory and update the shop object status.
     for(auto it = _buy_list.begin(); it != _buy_list.end(); ++it) {
         count = it->second->GetBuyCount();
@@ -1694,7 +1696,7 @@ void ShopMode::CompleteTransaction()
         if (!it->second->IsInfiniteAmount())
             it->second->DecrementStockCount(count);
 
-        GlobalManager->AddToInventory(id, count);
+        inventory_handler.AddToInventory(id, count);
 
         if (!it->second->IsInfiniteAmount() &&
             it->second->GetStockCount() == 0) {
@@ -1728,7 +1730,7 @@ void ShopMode::CompleteTransaction()
 
         it->second->ResetSellCount();
         it->second->DecrementOwnCount(count);
-        GlobalManager->DecrementItemCount(id, count);
+        inventory_handler.DecrementItemCount(id, count);
 
         // When all owned instances of this object have been sold off, the object is automatically removed
         // from the player's inventory. If the object is not sold in the shop, this means it must be removed
@@ -1751,13 +1753,13 @@ void ShopMode::CompleteTransaction()
         it->second->IncrementOwnCount(count);
         if (!it->second->IsInfiniteAmount())
             it->second->DecrementStockCount(count);
-        GlobalManager->AddToInventory(id, count);
+        inventory_handler.AddToInventory(id, count);
 
         //Remove trade condition items from inventory and possibly call RemoveObjectToSell
         for(uint32_t i = 0; i < it->second->GetObject()->GetTradeConditions().size(); ++i) {
             auto tradeCondition = it->second->GetObject()->GetTradeConditions()[i];
-            GlobalManager->DecrementItemCount(tradeCondition.first,
-                                              tradeCondition.second * count);
+            inventory_handler.DecrementItemCount(tradeCondition.first,
+                                                 tradeCondition.second * count);
         }
 
         if(!it->second->IsInfiniteAmount() && it->second->GetStockCount() == 0) {
